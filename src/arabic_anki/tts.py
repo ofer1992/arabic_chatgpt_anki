@@ -13,6 +13,24 @@ from .config import TTSConfig
 from .prompt import audio_filename, build_tts_prompt
 
 
+def _create_client(api_key: str) -> object:
+    from google import genai
+    from google.genai import types
+
+    return genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(
+            retry_options=types.HttpRetryOptions(
+                attempts=4,
+                initial_delay=30.0,
+                max_delay=60.0,
+                exp_base=2.0,
+                jitter=5.0,
+            )
+        ),
+    )
+
+
 def _decode_audio_data(data: object) -> bytes:
     if isinstance(data, str):
         return base64.b64decode(data)
@@ -86,11 +104,10 @@ def synthesize_card(
         raise RuntimeError("GEMINI_API_KEY is not set")
 
     try:
-        from google import genai
+        client = _create_client(key)
     except ImportError as exc:
         raise RuntimeError("Install dependencies with: pip install -r requirements.txt") from exc
 
-    client = genai.Client(api_key=key)
     interaction = _request_audio(client, build_tts_prompt(card.transcript, config), config)
 
     output_audio = getattr(interaction, "output_audio", None)

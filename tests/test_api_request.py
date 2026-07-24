@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
+from google import genai
+
 from arabic_anki.config import TTSConfig
-from arabic_anki.tts import _request_audio
+from arabic_anki.tts import _create_client, _request_audio
 
 
 CONFIG = TTSConfig(
@@ -26,6 +28,26 @@ class FakeInteractions:
 @dataclass
 class FakeClient:
     interactions: FakeInteractions
+
+
+def test_client_uses_bounded_rate_limit_backoff(monkeypatch) -> None:
+    captured: dict = {}
+
+    def fake_client(**kwargs):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(genai, "Client", fake_client)
+
+    _create_client("secret")
+
+    assert captured["api_key"] == "secret"
+    retry = captured["http_options"].retry_options
+    assert retry.attempts == 4
+    assert retry.initial_delay == 30.0
+    assert retry.max_delay == 60.0
+    assert retry.exp_base == 2.0
+    assert retry.jitter == 5.0
 
 
 def test_interactions_api_request_shape() -> None:

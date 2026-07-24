@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+dist/*.apkg
+dist/*.zip
+*.wav
+*.pcm
+.DS_Store

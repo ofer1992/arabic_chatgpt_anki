@@ -1,0 +1,8 @@
+{
+  "model": "gemini-3.1-flash-tts-preview",
+  "voice": "Kore",
+  "sample_rate_hz": 24000,
+  "prompt_version": 1,
+  "audio_profile": "Read only the supplied Arabic text. Speak in a natural urban Palestinian Arabic accent from Jerusalem. Use casual everyday pronunciation, not Modern Standard Arabic. Speak clearly and slightly slowly, like a patient language tutor. Do not add, remove, translate, or reformulate any words.",
+  "scene": "A tutor recording a flashcard audio for a lesson in Palestinian arabic"
+}

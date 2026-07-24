@@ -1,0 +1,115 @@
+name: Build Arabic Anki deck
+
+on:
+  workflow_dispatch:
+    inputs:
+      regenerate_all:
+        description: Regenerate all audio, including cached clips
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - "cards/**"
+      - "config/**"
+      - "src/**"
+      - "tests/**"
+      - "requirements.txt"
+      - "pyproject.toml"
+      - ".github/workflows/build-deck.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arabic-anki-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Validate source cards
+        run: python -m arabic_anki check
+
+      - name: Generate missing audio
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.regenerate_all != true }}
+        run: python -m arabic_anki generate-audio
+
+      - name: Regenerate all audio
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.regenerate_all == true }}
+        run: python -m arabic_anki generate-audio --force
+
+      - name: Commit generated audio cache
+        run: |
+          if git diff --quiet -- media; then
+            echo "No new audio to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add media
+          git commit -m "Generate Palestinian Arabic audio"
+          git push
+
+      - name: Build Anki package with genanki
+        run: python -m arabic_anki build
+
+      - name: Validate Anki package
+        run: python -m arabic_anki validate
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arabic-ChatGPT-Conversations
+          path: dist/Arabic-ChatGPT-Conversations.apkg
+          if-no-files-found: error
+
+      - name: Publish latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest \
+              dist/Arabic-ChatGPT-Conversations.apkg \
+              --clobber
+            gh release edit latest \
+              --target "$(git rev-parse HEAD)" \
+              --title "Arabic — ChatGPT Conversations (latest)" \
+              --notes "Automatically rebuilt with Gemini 3.1 Flash TTS audio." \
+              --latest
+          else
+            gh release create latest \
+              dist/Arabic-ChatGPT-Conversations.apkg \
+              --target "$(git rev-parse HEAD)" \
+              --title "Arabic — ChatGPT Conversations (latest)" \
+              --notes "Automatically rebuilt with Gemini 3.1 Flash TTS audio." \
+              --latest
+          fi

@@ -33,6 +33,7 @@ def test_genanki_build_and_validate(tmp_path: Path) -> None:
     (media / audio_filename(card, tts)).write_bytes(b"ID3dummy")
     output = tmp_path / "test.apkg"
     build_deck([card], tts, deck, media, output)
-    result = validate_apkg(output, expected_notes=1)
+    result = validate_apkg(output, expected_notes=1, expected_cards=2)
     assert result["notes"] == 1
+    assert result["cards"] == 2
     assert result["media"] == 1

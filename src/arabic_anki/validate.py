@@ -7,7 +7,11 @@ import zipfile
 from pathlib import Path
 
 
-def validate_apkg(path: Path, expected_notes: int | None = None) -> dict[str, int | str]:
+def validate_apkg(
+    path: Path,
+    expected_notes: int | None = None,
+    expected_cards: int | None = None,
+) -> dict[str, int | str]:
     if not path.exists() or path.stat().st_size == 0:
         raise ValueError(f"Missing or empty package: {path}")
 
@@ -38,8 +42,8 @@ def validate_apkg(path: Path, expected_notes: int | None = None) -> dict[str, in
         raise ValueError(f"SQLite integrity check failed: {integrity}")
     if expected_notes is not None and note_count != expected_notes:
         raise ValueError(f"Expected {expected_notes} notes, found {note_count}")
-    if card_count != note_count:
-        raise ValueError(f"Expected one card per note; found {card_count} cards and {note_count} notes")
+    if expected_cards is not None and card_count != expected_cards:
+        raise ValueError(f"Expected {expected_cards} cards, found {card_count}")
 
     return {
         "integrity": integrity,

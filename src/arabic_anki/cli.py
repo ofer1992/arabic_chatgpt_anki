@@ -76,7 +76,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "validate":
-        result = validate_apkg(output_path, expected_notes=len(cards))
+        result = validate_apkg(
+            output_path,
+            expected_notes=len(cards),
+            expected_cards=len(cards) * 2,
+        )
         print(result)
         return 0
 
@@ -84,7 +88,13 @@ def main(argv: list[str] | None = None) -> int:
         generated, reused = generate_audio(cards, tts_config, media_dir)
         print(f"Generated {generated}; reused {reused}")
         build_deck(cards, tts_config, deck_config, media_dir, output_path)
-        print(validate_apkg(output_path, expected_notes=len(cards)))
+        print(
+            validate_apkg(
+                output_path,
+                expected_notes=len(cards),
+                expected_cards=len(cards) * 2,
+            )
+        )
         return 0
 
     raise AssertionError(f"Unhandled command: {args.command}")

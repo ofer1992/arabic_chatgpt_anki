@@ -51,6 +51,13 @@ Optional fields:
 
 The repository includes the phrase used to test Gemini AI Studio as its first card. Replace or extend it with the ten cards from each Arabic conversation.
 
+Each source record creates two Anki cards:
+
+- **Arabic → English:** the Arabic phrase, Arabic example, and audio are on the front; the English meaning and English example are on the back.
+- **English → Arabic:** the English meaning and English example are on the front; the Arabic phrase, Arabic example, and audio are on the back.
+
+Each example stays with its language, so the audio transcript matches the complete Arabic side.
+
 ## Exact Gemini request
 
 The program sends the complete prompt as `input` to `gemini-3.1-flash-tts-preview`. Voice selection is a separate API parameter.

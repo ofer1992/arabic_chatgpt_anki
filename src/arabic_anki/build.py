@@ -76,18 +76,31 @@ def build_deck(
         ],
         templates=[
             {
-                "name": "Recognition",
+                "name": "Arabic → English",
                 "qfmt": (
                     '<div class="arabic">{{Arabic}}</div>'
+                    '{{#ExampleArabic}}<div class="example-arabic">{{ExampleArabic}}</div>{{/ExampleArabic}}'
                     '{{#Audio}}<div class="audio">{{Audio}}</div>{{/Audio}}'
                 ),
                 "afmt": (
                     '{{FrontSide}}<hr id="answer">'
                     '<div class="english">{{English}}</div>'
-                    '{{#ExampleArabic}}<div class="example-arabic">{{ExampleArabic}}</div>{{/ExampleArabic}}'
                     '{{#ExampleEnglish}}<div class="example-english">{{ExampleEnglish}}</div>{{/ExampleEnglish}}'
                 ),
-            }
+            },
+            {
+                "name": "English → Arabic",
+                "qfmt": (
+                    '<div class="english">{{English}}</div>'
+                    '{{#ExampleEnglish}}<div class="example-english">{{ExampleEnglish}}</div>{{/ExampleEnglish}}'
+                ),
+                "afmt": (
+                    '{{FrontSide}}<hr id="answer">'
+                    '<div class="arabic">{{Arabic}}</div>'
+                    '{{#ExampleArabic}}<div class="example-arabic">{{ExampleArabic}}</div>{{/ExampleArabic}}'
+                    '{{#Audio}}<div class="audio">{{Audio}}</div>{{/Audio}}'
+                ),
+            },
         ],
         css=CARD_CSS,
         sort_field_index=0,
